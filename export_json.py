@@ -4,7 +4,7 @@ from psycopg2.extras import RealDictCursor
 from decimal import Decimal
 from datetime import date
 
-# Custom JSON Encoder to handle Decimal and date serialization
+# для уникнення помилок з типом даних date, decimal) у джсон
 class CustomEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Decimal):
@@ -13,7 +13,7 @@ class CustomEncoder(json.JSONEncoder):
             return obj.isoformat()
         return super().default(obj)
 
-# Connect to the database
+# з'єднання з базою даних
 conn = psycopg2.connect(
     dbname="db_lab3",
     user="sonia",
@@ -21,32 +21,32 @@ conn = psycopg2.connect(
     host="localhost"
 )
 
-# Use RealDictCursor to get rows as dictionaries
+# зчитуємо рядки як словники
 cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-# Export financials table
+# експорт таблиці фінансування
 cursor.execute("SELECT * FROM financials")
 financials_data = cursor.fetchall()
 
-# Export rating table
+# експорт таблиці рейтингів
 cursor.execute("SELECT * FROM rating")
 rating_data = cursor.fetchall()
 
-# Export movie table
+# експорт таблиці фільмів
 cursor.execute("SELECT * FROM movie")
 movie_data = cursor.fetchall()
 
-# Close the cursor and connection
+# закриваємо з'єднання
 cursor.close()
 conn.close()
 
-# Create a dictionary to store the data
+# створення словника для зберігання даних
 data_dict = {
     "financials": financials_data,
     "rating": rating_data,
     "movie": movie_data
 }
 
-# Write the dictionary to a JSON file using the custom encoder
+# записуємо словник в джсон файл + використовуємо ф-цію з кастомними типами даних 
 with open('data.json', 'w', encoding='utf-8') as json_file:
     json.dump(data_dict, json_file, ensure_ascii=False, indent=2, cls=CustomEncoder)
